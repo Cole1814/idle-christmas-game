@@ -86,24 +86,46 @@
     to { transform: translateY(110vh); }
   }
   #ornament-box {
-    width: 150px;
-    height: 150px;
+    width: 250px;
+    height: 200px;
     margin: 20px auto;
     background: #fff;
-    border-radius: 50%;
+    border-radius: 12px;
     position: relative;
     cursor: pointer;
-    overflow: visible;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-content: space-around;
+    padding: 10px;
   }
   .ornament {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 40px;
+    border-radius: 50% 50% 50% 50%;
     background: red;
-    border-radius: 50%;
-    position: absolute;
-    pointer-events: none;
-    animation: floatUp 1s ease forwards;
+    position: relative;
+    margin: 2px;
+    display: inline-block;
+    cursor: pointer;
+    background: radial-gradient(circle at 25% 25%, #fff, currentColor);
   }
+  .ornament::before {
+    content: '';
+    width: 10px;
+    height: 6px;
+    background: gold;
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+  }
+  .ornament.red { color: #ff0000; }
+  .ornament.green { color: #00ff00; }
+  .ornament.blue { color: #1e90ff; }
+  .ornament.gold { color: #ffd700; }
   @keyframes floatUp {
     0% { opacity:1; transform: translateY(0px) scale(1); }
     100% { opacity:0; transform: translateY(-50px) scale(0.5); }
@@ -187,20 +209,29 @@ upgradeData.forEach((up, index)=>{
   up.fillElem = fill;
 });
 
+// Create multiple ornaments
 const ornamentBox = document.getElementById('ornament-box');
-ornamentBox.addEventListener('mouseenter', ()=>{
-  coins += clickBoost;
-  coinsDisplay.textContent = coins;
-
+const colors = ['red','green','blue','gold'];
+for(let i=0;i<16;i++){
   let ornament = document.createElement('div');
-  ornament.className='ornament';
-  ornament.style.left = Math.random()*125 + 'px';
-  ornament.style.top = Math.random()*125 + 'px';
+  ornament.className = 'ornament ' + colors[Math.floor(Math.random()*colors.length)];
   ornamentBox.appendChild(ornament);
-  setTimeout(()=>{ ornamentBox.removeChild(ornament); },1000);
+  ornament.addEventListener('mouseenter', ()=>{
+    coins += clickBoost;
+    coinsDisplay.textContent = coins;
 
-  checkPrestige();
-});
+    // Animate collected ornament
+    let clone = ornament.cloneNode(true);
+    clone.style.position='absolute';
+    clone.style.left = ornament.offsetLeft + 'px';
+    clone.style.top = ornament.offsetTop + 'px';
+    ornamentBox.appendChild(clone);
+    clone.style.animation='floatUp 1s ease forwards';
+    setTimeout(()=>{ clone.remove(); },1000);
+
+    checkPrestige();
+  });
+}
 
 function updateBars(){
   upgradeData.forEach(up=>{
