@@ -83,12 +83,24 @@
     width: 150px;
     height: 150px;
     margin: 20px auto;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/6/63/Christmas_Ball.png') center/contain no-repeat;
+    background: #fff;
+    border-radius: 50%;
+    position: relative;
     cursor: pointer;
+    overflow: visible;
   }
-  .special-upgrade {
-    display: block;
-    margin: 10px 0;
+  .ornament {
+    width: 25px;
+    height: 25px;
+    background: red;
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    animation: floatUp 1s ease forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity:1; transform: translateY(0px) scale(1); }
+    100% { opacity:0; transform: translateY(-50px) scale(0.5); }
   }
 </style>
 </head>
@@ -173,6 +185,15 @@ const ornamentBox = document.getElementById('ornament-box');
 ornamentBox.addEventListener('mouseenter', ()=>{
   coins += clickBoost;
   coinsDisplay.textContent = coins;
+
+  // Create visible ornament
+  let ornament = document.createElement('div');
+  ornament.className='ornament';
+  ornament.style.left = Math.random()*125 + 'px';
+  ornament.style.top = Math.random()*125 + 'px';
+  ornamentBox.appendChild(ornament);
+  setTimeout(()=>{ ornamentBox.removeChild(ornament); },1000);
+
   checkPrestige();
 });
 
@@ -198,7 +219,7 @@ function checkPrestige(){
 }
 
 prestigeBtn.onclick = ()=>{
-  let gainedPoints = Math.floor(coins/1000); // more coins = more prestige points
+  let gainedPoints = Math.floor(coins/1000);
   coins=0; cps=0;
   upgradeData.forEach(up=>{ if(up.level) up.level=0; });
   specialPoints+=gainedPoints;
