@@ -49,6 +49,7 @@
     height: 100%;
     width: 0%;
     transition: width 0.3s;
+    background: repeating-linear-gradient(45deg, red, red 10px, white 10px, white 20px);
   }
   .modal {
     display: none;
@@ -61,6 +62,7 @@
     border-radius: 15px;
     z-index: 10;
     width: 400px;
+    text-align: left;
   }
   .modal button {
     margin: 10px;
@@ -77,6 +79,17 @@
   @keyframes fall {
     to { transform: translateY(110vh); }
   }
+  #ornament-box {
+    width: 150px;
+    height: 150px;
+    margin: 20px auto;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/6/63/Christmas_Ball.png') center/contain no-repeat;
+    cursor: pointer;
+  }
+  .special-upgrade {
+    display: block;
+    margin: 10px 0;
+  }
 </style>
 </head>
 <body>
@@ -85,7 +98,7 @@
   <p>Ornaments: <span id="coins">0</span></p>
   <p>Ornaments per second: <span id="cps">0</span></p>
 
-  <button id="clickBtn">Click for +1 Ornament</button>
+  <div id="ornament-box"></div>
 
   <h2>Upgrades</h2>
   <div id="upgrades"></div>
@@ -97,11 +110,7 @@
 
 <div class="modal" id="specialModal">
   <h2>Special Upgrades</h2>
-  <button class="special-upgrade" data-cost="5" data-effect="clickBoost">Candy Cane Boost (+10% per click)</button>
-  <button class="special-upgrade" data-cost="5" data-effect="autoBoost">Elf Efficiency (+10% auto)</button>
-  <button class="special-upgrade" data-cost="10" data-effect="globalBoost">Snowstorm Multiplier (+20% CPS)</button>
-  <button class="special-upgrade" data-cost="10" data-effect="goldenPoints">Golden Ornament (+1 SP chance)</button>
-  <button class="special-upgrade" data-cost="15" data-effect="holidaySpirit">Holiday Spirit (Visuals)</button>
+  <div id="specialUpgradesList"></div>
   <br>
   <button id="closeModal">Close</button>
 </div>
@@ -119,20 +128,20 @@ for(let i=0;i<50;i++){
 }
 
 let coins = 0, cps = 0, clickBoost = 1, autoBoost = 1, globalBoost = 1, specialPoints = 0;
-
 const coinsDisplay = document.getElementById('coins');
 const cpsDisplay = document.getElementById('cps');
 const upgradesDiv = document.getElementById('upgrades');
 const prestigeBtn = document.getElementById('prestigeBtn');
 const specialPointsDisplay = document.getElementById('specialPoints');
 const specialModal = document.getElementById('specialModal');
+const specialUpgradesList = document.getElementById('specialUpgradesList');
 
 const upgradeData = [
-  {name:'Elf Helper', cost:50, cps:1, color:'linear-gradient(45deg, red, green)'},
-  {name:'Toy Workshop', cost:200, cps:5, color:'linear-gradient(45deg, gold, yellow)'} ,
-  {name:'Reindeer Team', cost:500, cps:15, color:'linear-gradient(45deg, brown, sienna)'},
-  {name:'Santa\'s Sleigh', cost:1200, cps:50, color:'linear-gradient(45deg, red, darkred)'} ,
-  {name:'Magical Candy Factory', cost:5000, cps:200, color:'repeating-linear-gradient(45deg, red, red 10px, white 10px, white 20px)'}
+  {name:'Elf Helper', cost:50, cps:1},
+  {name:'Toy Workshop', cost:200, cps:5},
+  {name:'Reindeer Team', cost:500, cps:15},
+  {name:'Santa\'s Sleigh', cost:1200, cps:50},
+  {name:'Magical Candy Factory', cost:5000, cps:200}
 ];
 
 upgradeData.forEach((up, index)=>{
@@ -143,7 +152,6 @@ upgradeData.forEach((up, index)=>{
   barContainer.className='bar';
   let fill = document.createElement('div');
   fill.className='fill';
-  fill.style.background = up.color;
   barContainer.appendChild(fill);
   upgradesDiv.appendChild(btn);
   upgradesDiv.appendChild(barContainer);
@@ -151,7 +159,6 @@ upgradeData.forEach((up, index)=>{
   btn.onclick = ()=>{
     if(coins>=up.cost){
       coins-=up.cost;
-      up.cps*=1; // can adjust for scaling if desired
       up.level = (up.level||0)+1;
       coinsDisplay.textContent = coins;
       btn.textContent=`${up.name} (Level: ${up.level}, Next: ${Math.floor(up.cost*1.5)})`;
@@ -162,7 +169,12 @@ upgradeData.forEach((up, index)=>{
   up.fillElem = fill;
 });
 
-document.getElementById('clickBtn').onclick = ()=>{ coins += clickBoost; coinsDisplay.textContent=coins; checkPrestige(); };
+const ornamentBox = document.getElementById('ornament-box');
+ornamentBox.addEventListener('mouseenter', ()=>{
+  coins += clickBoost;
+  coinsDisplay.textContent = coins;
+  checkPrestige();
+});
 
 function updateBars(){
   upgradeData.forEach(up=>{
@@ -186,24 +198,34 @@ function checkPrestige(){
 }
 
 prestigeBtn.onclick = ()=>{
+  let gainedPoints = Math.floor(coins/1000); // more coins = more prestige points
   coins=0; cps=0;
   upgradeData.forEach(up=>{ if(up.level) up.level=0; });
-  specialPoints+=10;
+  specialPoints+=gainedPoints;
   specialPointsDisplay.textContent=specialPoints;
   prestigeBtn.style.display='none';
   upgradesDiv.querySelectorAll('.upgrade-button').forEach((btn,i)=>{ btn.textContent=`${upgradeData[i].name} (Cost: ${upgradeData[i].cost})`; });
+  alert(`You gained ${gainedPoints} special points from prestige!`);
 };
 
 // Special upgrades modal
-document.getElementById('specialMenuBtn').onclick = ()=>{ specialModal.style.display='block'; };
-document.getElementById('closeModal').onclick = ()=>{ specialModal.style.display='none'; };
-document.querySelectorAll('.special-upgrade').forEach(btn=>{
+const specialUpgradesData = [
+  {name:'Candy Cane Boost', effect:'clickBoost', cost:5, desc:'(+10% per hover)'},
+  {name:'Elf Efficiency', effect:'autoBoost', cost:5, desc:'(+10% auto)'},
+  {name:'Snowstorm Multiplier', effect:'globalBoost', cost:10, desc:'(+20% CPS)'},
+  {name:'Golden Ornament', effect:'goldenPoints', cost:10, desc:'(+1 SP chance)'},
+  {name:'Holiday Spirit', effect:'holidaySpirit', cost:15, desc:'(Visual effects)'}
+];
+
+specialUpgradesData.forEach(up=>{
+  let btn = document.createElement('button');
+  btn.className='special-upgrade';
+  btn.textContent = `${up.name} (Cost: ${up.cost}) ${up.desc}`;
   btn.onclick=()=>{
-    let cost=parseInt(btn.dataset.cost);
-    if(specialPoints>=cost){
-      specialPoints-=cost;
+    if(specialPoints>=up.cost){
+      specialPoints-=up.cost;
       specialPointsDisplay.textContent=specialPoints;
-      switch(btn.dataset.effect){
+      switch(up.effect){
         case 'clickBoost': clickBoost*=1.1; break;
         case 'autoBoost': autoBoost*=1.1; break;
         case 'globalBoost': globalBoost*=1.2; break;
@@ -212,8 +234,11 @@ document.querySelectorAll('.special-upgrade').forEach(btn=>{
       }
     }
   };
+  specialUpgradesList.appendChild(btn);
 });
+
+document.getElementById('specialMenuBtn').onclick = ()=>{ specialModal.style.display='block'; };
+document.getElementById('closeModal').onclick = ()=>{ specialModal.style.display='none'; };
 </script>
 </body>
 </html>
-
