@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Christmas Idle Game</title>
+<title>NBA Idle Game</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1600880292089-90b6c845ebbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8c25vd3xlbnwwfHx8fDE2NzkwMTUyODk&ixlib=rb-4.0.3&q=80&w=1080') no-repeat center/cover;
+    background: url('https://i.imgur.com/Ot4sjvB.jpg') no-repeat center/cover; /* LeBron dunking */
+    background-size: cover;
     color: #fff;
     text-align: center;
     padding-top: 30px;
@@ -18,11 +19,10 @@
     margin: auto;
     display: flex;
     justify-content: space-between;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     padding: 20px;
     border-radius: 12px;
     border: 4px solid #fff;
-    box-shadow: 0 0 15px #0f0;
   }
   .left, .right {
     width: 48%;
@@ -34,111 +34,38 @@
     border-radius: 8px;
     font-size: 16px;
     cursor: pointer;
-    background: red;
+    background: #ff4500;
     color: white;
   }
-  .upgrade-button {
-    display: block;
-    margin: 15px auto;
-    width: 90%;
-    text-align: left;
-  }
-  .bar {
-    width: 100%;
-    height: 20px;
-    margin: 5px 0 20px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #333;
-  }
-  .fill {
-    height: 100%;
-    width: 0%;
-    transition: width 0.3s;
-    background: repeating-linear-gradient(45deg, red, red 10px, white 10px, white 20px);
-  }
-  .modal {
-    display: none;
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.95);
-    padding: 30px;
-    border: 4px solid #fff;
-    border-radius: 15px;
-    z-index: 10;
-    width: 400px;
-    text-align: left;
-  }
-  .modal button {
-    margin: 10px;
-  }
-  .snowflake {
-    position: fixed;
-    top: -10px;
-    color: white;
-    font-size: 1.2em;
-    user-select: none;
-    pointer-events: none;
-    animation: fall linear infinite;
-  }
-  @keyframes fall {
-    to { transform: translateY(110vh); }
-  }
-  #ornament-box {
+  #head-box {
     width: 250px;
     height: 200px;
     margin: 20px auto;
-    background: #fff;
+    background: rgba(0,0,0,0.7);
     border-radius: 12px;
     position: relative;
-    cursor: pointer;
     overflow: hidden;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-content: space-around;
-    padding: 10px;
   }
-  .ornament {
-    width: 30px;
+  .head {
+    width: 40px;
     height: 40px;
-    border-radius: 50% 50% 50% 50%;
-    background: red;
-    position: relative;
-    margin: 2px;
-    display: inline-block;
-    cursor: pointer;
-    background: radial-gradient(circle at 25% 25%, #fff, currentColor);
-  }
-  .ornament::before {
-    content: '';
-    width: 10px;
-    height: 6px;
-    background: gold;
     position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 2px;
-  }
-  .ornament.red { color: #ff0000; }
-  .ornament.green { color: #00ff00; }
-  .ornament.blue { color: #1e90ff; }
-  .ornament.gold { color: #ffd700; }
-  @keyframes floatUp {
-    0% { opacity:1; transform: translateY(0px) scale(1); }
-    100% { opacity:0; transform: translateY(-50px) scale(0.5); }
+    cursor: pointer;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid #fff;
+    z-index: 10;
   }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="left">
-    <h1>🎄 Christmas Idle Game 🎄</h1>
-    <p>Ornaments: <span id="coins">0</span></p>
-    <p>Ornaments per second: <span id="cps">0</span></p>
-    <div id="ornament-box"></div>
+    <h1>🏀 NBA Idle Game 🏀</h1>
+    <p>LeBron Heads Collected: <span id="coins">0</span></p>
+    <p>Heads per second: <span id="cps">0</span></p>
+    <div id="head-box"></div>
   </div>
   <div class="right">
     <h2>Upgrades</h2>
@@ -154,48 +81,33 @@
   <br>
   <button id="closeModal">Close</button>
 </div>
-
 <script>
-// Snow effect
-for(let i=0;i<50;i++){
-  let snow = document.createElement('div');
-  snow.classList.add('snowflake');
-  snow.style.left = Math.random()*100 + 'vw';
-  snow.style.animationDuration = (Math.random()*5+5) + 's';
-  snow.style.fontSize = (Math.random()*10+10)+'px';
-  snow.textContent = '❄';
-  document.body.appendChild(snow);
-}
-
 let coins = 0, cps = 0, clickBoost = 1, autoBoost = 1, globalBoost = 1, specialPoints = 0;
 const coinsDisplay = document.getElementById('coins');
 const cpsDisplay = document.getElementById('cps');
 const upgradesDiv = document.getElementById('upgrades');
-const prestigeBtn = document.getElementById('prestigeBtn');
-const specialPointsDisplay = document.getElementById('specialPoints');
-const specialModal = document.getElementById('specialModal');
-const specialUpgradesList = document.getElementById('specialUpgradesList');
+const headBox = document.getElementById('head-box');
+
+// Reliable LeBron head images (publicly hosted PNGs)
+const headImages = [
+  'https://i.imgur.com/ZKqQ3Vd.png',
+  'https://i.imgur.com/dP9x4fG.png',
+  'https://i.imgur.com/hf9A4aS.png'
+];
 
 const upgradeData = [
-  {name:'Elf Helper', cost:50, cps:1},
-  {name:'Toy Workshop', cost:200, cps:5},
-  {name:'Reindeer Team', cost:500, cps:15},
-  {name:'Santa\'s Sleigh', cost:1200, cps:50},
-  {name:'Magical Candy Factory', cost:5000, cps:200}
+  {name:'Basketball Drills', cost:50, cps:1},
+  {name:'Shooting Coach', cost:200, cps:5},
+  {name:'Strength Training', cost:500, cps:15},
+  {name:'Legendary Sneakers', cost:1200, cps:50},
+  {name:'MVP Award', cost:5000, cps:200}
 ];
 
 upgradeData.forEach((up, index)=>{
   let btn = document.createElement('button');
   btn.className='upgrade-button';
   btn.textContent = `${up.name} (Cost: ${up.cost})`;
-  let barContainer = document.createElement('div');
-  barContainer.className='bar';
-  let fill = document.createElement('div');
-  fill.className='fill';
-  barContainer.appendChild(fill);
   upgradesDiv.appendChild(btn);
-  upgradesDiv.appendChild(barContainer);
-
   btn.onclick = ()=>{
     if(coins>=up.cost){
       coins-=up.cost;
@@ -206,95 +118,28 @@ upgradeData.forEach((up, index)=>{
       cps+=up.cps;
     }
   };
-  up.fillElem = fill;
 });
 
-// Create multiple ornaments
-const ornamentBox = document.getElementById('ornament-box');
-const colors = ['red','green','blue','gold'];
-for(let i=0;i<16;i++){
-  let ornament = document.createElement('div');
-  ornament.className = 'ornament ' + colors[Math.floor(Math.random()*colors.length)];
-  ornamentBox.appendChild(ornament);
-  ornament.addEventListener('mouseenter', ()=>{
+function spawnHead(){
+  let head = document.createElement('div');
+  head.className = 'head';
+  head.style.backgroundImage = `url('${headImages[Math.floor(Math.random()*headImages.length)]}')`;
+  head.style.left = Math.random() * (headBox.clientWidth-40) + 'px';
+  head.style.top = Math.random() * (headBox.clientHeight-40) + 'px';
+  headBox.appendChild(head);
+  head.addEventListener('mouseenter', ()=>{
     coins += clickBoost;
     coinsDisplay.textContent = coins;
-
-    // Animate collected ornament
-    let clone = ornament.cloneNode(true);
-    clone.style.position='absolute';
-    clone.style.left = ornament.offsetLeft + 'px';
-    clone.style.top = ornament.offsetTop + 'px';
-    ornamentBox.appendChild(clone);
-    clone.style.animation='floatUp 1s ease forwards';
-    setTimeout(()=>{ clone.remove(); },1000);
-
-    checkPrestige();
+    head.remove();
   });
 }
 
-function updateBars(){
-  upgradeData.forEach(up=>{
-    if(up.level){
-      let progress = Math.min((coins/up.cost)*100,100);
-      up.fillElem.style.width = progress+'%';
-    }
-  });
-}
-
+setInterval(spawnHead, 1000);
 setInterval(()=>{
   coins += cps*autoBoost*globalBoost;
   coinsDisplay.textContent= Math.floor(coins);
   cpsDisplay.textContent= Math.floor(cps*autoBoost*globalBoost);
-  updateBars();
-  checkPrestige();
 },1000);
-
-function checkPrestige(){
-  if(coins>=10000) prestigeBtn.style.display='block';
-}
-
-prestigeBtn.onclick = ()=>{
-  let gainedPoints = Math.floor(coins/1000);
-  coins=0; cps=0;
-  upgradeData.forEach(up=>{ if(up.level) up.level=0; });
-  specialPoints+=gainedPoints;
-  specialPointsDisplay.textContent=specialPoints;
-  prestigeBtn.style.display='none';
-  upgradesDiv.querySelectorAll('.upgrade-button').forEach((btn,i)=>{ btn.textContent=`${upgradeData[i].name} (Cost: ${upgradeData[i].cost})`; });
-  alert(`You gained ${gainedPoints} special points from prestige!`);
-};
-
-const specialUpgradesData = [
-  {name:'Candy Cane Boost', effect:'clickBoost', cost:5, desc:'(+10% per hover)'},
-  {name:'Elf Efficiency', effect:'autoBoost', cost:5, desc:'(+10% auto)'},
-  {name:'Snowstorm Multiplier', effect:'globalBoost', cost:10, desc:'(+20% CPS)'},
-  {name:'Golden Ornament', effect:'goldenPoints', cost:10, desc:'(+1 SP chance)'},
-  {name:'Holiday Spirit', effect:'holidaySpirit', cost:15, desc:'(Visual effects)'}
-];
-
-specialUpgradesData.forEach(up=>{
-  let btn = document.createElement('button');
-  btn.className='special-upgrade';
-  btn.textContent = `${up.name} (Cost: ${up.cost}) ${up.desc}`;
-  btn.onclick=()=>{
-    if(specialPoints>=up.cost){
-      specialPoints-=up.cost;
-      specialPointsDisplay.textContent=specialPoints;
-      switch(up.effect){
-        case 'clickBoost': clickBoost*=1.1; break;
-        case 'autoBoost': autoBoost*=1.1; break;
-        case 'globalBoost': globalBoost*=1.2; break;
-        case 'goldenPoints': setInterval(()=>{ if(Math.random()<0.05) specialPoints++; specialPointsDisplay.textContent=specialPoints; },5000); break;
-        case 'holidaySpirit': document.body.style.boxShadow='0 0 30px #fff inset'; break;
-      }
-    }
-  };
-  specialUpgradesList.appendChild(btn);
-});
-
-document.getElementById('specialMenuBtn').onclick = ()=>{ specialModal.style.display='block'; };
-document.getElementById('closeModal').onclick = ()=>{ specialModal.style.display='none'; };
 </script>
 </body>
 </html>
