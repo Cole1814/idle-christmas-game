@@ -1,101 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basketball Game</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-        }
-
-        canvas {
-            border: 2px solid #333;
-            background-color: #87ceeb; /* sky blue */
-            display: block;
-            margin: 20px auto;
-        }
-
-        h1 {
-            margin-top: 20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basketball Game</title>
+<style>
+    body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+    }
+    canvas {
+        border: 2px solid #333;
+        background-color: #87ceeb;
+        display: block;
+        margin: 20px auto;
+    }
+    h1 {
+        margin-top: 20px;
+    }
+</style>
 </head>
 <body>
-    <h1>Basketball Shooting Game</h1>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-    <p>Score: <span id="score">0</span></p>
+<h1>Basketball Game</h1>
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<p>Score: <span id="score">0</span></p>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-        let ball = { x: 100, y: 350, radius: 15, dx: 0, dy: 0 };
-        let hoop = { x: 500, y: 150, width: 60, height: 10 };
-        let gravity = 0.5;
-        let score = 0;
+let ball = { x: 100, y: 350, radius: 15, dx: 0, dy: 0, shooting: false };
+let hoop = { x: 500, y: 150, width: 60, height: 10 };
+let gravity = 0.5;
+let score = 0;
 
-        function drawBall() {
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
-            ctx.fillStyle = 'orange';
-            ctx.fill();
-            ctx.closePath();
-        }
+let mouse = { x: 0, y: 0, down: false };
 
-        function drawHoop() {
-            ctx.beginPath();
-            ctx.rect(hoop.x, hoop.y, hoop.width, hoop.height);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-            ctx.closePath();
-        }
+// Draw functions
+function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+    ctx.fillStyle = 'orange';
+    ctx.fill();
+    ctx.closePath();
+}
 
-        function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawHoop() {
+    ctx.beginPath();
+    ctx.rect(hoop.x, hoop.y, hoop.width, hoop.height);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    ctx.closePath();
+}
 
-            drawBall();
-            drawHoop();
+function drawAimLine() {
+    if(mouse.down && !ball.shooting) {
+        ctx.beginPath();
+        ctx.moveTo(ball.x, ball.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
 
-            ball.dy += gravity;
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+// Update game
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // floor collision
-            if(ball.y + ball.radius > canvas.height){
-                ball.y = canvas.height - ball.radius;
-                ball.dy = 0;
-                ball.dx = 0;
-            }
+    drawBall();
+    drawHoop();
+    drawAimLine();
 
-            // hoop collision
-            if(ball.x + ball.radius > hoop.x && ball.x - ball.radius < hoop.x + hoop.width &&
-               ball.y + ball.radius > hoop.y && ball.y - ball.radius < hoop.y + hoop.height){
-                score++;
-                document.getElementById('score').innerText = score;
-                resetBall();
-            }
+    if(ball.shooting) {
+        ball.dy += gravity;
+        ball.x += ball.dx;
+        ball.y += ball.dy;
 
-            requestAnimationFrame(update);
-        }
-
-        function resetBall() {
-            ball.x = 100;
-            ball.y = 350;
-            ball.dx = 0;
+        // floor collision
+        if(ball.y + ball.radius > canvas.height){
+            ball.y = canvas.height - ball.radius;
             ball.dy = 0;
+            ball.dx = 0;
+            ball.shooting = false;
         }
 
-        document.addEventListener('keydown', (e) => {
-            if(e.key === ' '){ // press space to shoot
-                ball.dx = 5;
-                ball.dy = -10;
-            }
-        });
+        // hoop collision
+        if(ball.x + ball.radius > hoop.x && ball.x - ball.radius < hoop.x + hoop.width &&
+           ball.y + ball.radius > hoop.y && ball.y - ball.radius < hoop.y + hoop.height){
+            score++;
+            document.getElementById('score').innerText = score;
+            resetBall();
+        }
+    }
 
-        update();
-    </script>
+    requestAnimationFrame(update);
+}
+
+function resetBall() {
+    ball.x = 100;
+    ball.y = 350;
+    ball.dx = 0;
+    ball.dy = 0;
+    ball.shooting = false;
+}
+
+// Mouse events
+canvas.addEventListener('mousedown', (e) => {
+    mouse.down = true;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mouseup', (e) => {
+    if(!ball.shooting && mouse.down) {
+        const rect = canvas.getBoundingClientRect();
+        let releaseX = e.clientX - rect.left;
+        let releaseY = e.clientY - rect.top;
+        // velocity based on drag distance
+        ball.dx = (releaseX - ball.x) / 10;
+        ball.dy = (releaseY - ball.y) / 10;
+        ball.shooting = true;
+    }
+    mouse.down = false;
+});
+
+update();
+</script>
 </body>
 </html>
